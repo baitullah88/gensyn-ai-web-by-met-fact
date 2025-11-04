@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gensyn AI — Knowledge Quiz</title>
+<style>
+  :root{
+    --bg:#000;
+    --panel:#0b0b0b;
+    --pink:#f3c9c4; /* soft pink text */
+    --muted:#cbb6b2;
+    --accent:#f7c8c3;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  body{
+    background:var(--bg);
+    color:var(--pink);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+  }
+
+  /* header */
+  header{
+    width:100%;
+    max-width:1200px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:18px;
+    box-sizing:border-box;
+  }
+  .left, .center, .right { display:flex; align-items:center; gap:12px; }
+  .logo{
+    width:52px;height:52px; object-fit:contain; border-radius:8px;
+    background:transparent;
+  }
+  .hero{
+    height:56px; object-fit:contain;
+  }
+  .links a{
+    color:var(--pink); text-decoration:none; font-weight:600; font-size:14px;
+  }
+  .links a:hover{ color:#ffd6d0; text-decoration:underline; }
+
+  /* main card */
+  main{
+    width:100%;
+    max-width:920px;
+    padding:24px;
+    box-sizing:border-box;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.02);
+    border-radius:14px;
+    padding:28px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  }
+
+  h1{ margin:0 0 8px 0; color:var(--accent); font-size:28px; letter-spacing:0.2px; }
+  p.lead{ margin:0 0 18px 0; color:var(--muted); }
+
+  .progress{ color:var(--muted); font-size:13px; margin-bottom:12px; }
+
+  .question{ font-size:20px; margin:18px 0; color:var(--pink); min-height:56px; display:flex; align-items:center; justify-content:center; text-align:center; }
+  .options{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+  .option{
+    background:transparent; border:1px solid rgba(255,255,255,0.03);
+    padding:12px 14px; border-radius:10px; cursor:pointer; font-weight:700; color:var(--pink);
+    transition:all .18s ease; text-align:center;
+  }
+  .option:hover{ transform:translateY(-4px); border-color:rgba(243,201,196,0.25); box-shadow:0 6px 18px rgba(243,201,196,0.03); }
+  .option.correct{ background:linear-gradient(90deg, rgba(110,200,170,0.08), rgba(110,200,170,0.04)); border-color:#2fa875; color:#eafff0; }
+  .option.wrong{ background:linear-gradient(90deg, rgba(220,80,80,0.06), rgba(220,80,80,0.03)); border-color:#ff6b6b; color:#ffecec; }
+
+  .feedback{ margin-top:14px; font-weight:700; min-height:26px; color:var(--muted); text-align:center; }
+
+  .controls{ display:flex; gap:12px; justify-content:center; margin-top:18px; flex-wrap:wrap; }
+  .btn{
+    background:var(--pink); color:#100; border:none; padding:10px 18px; border-radius:999px; font-weight:700; cursor:pointer;
+    box-shadow:0 8px 30px rgba(243,201,196,0.07);
+  }
+  .btn.secondary{ background:transparent; color:var(--pink); border:1px solid rgba(243,201,196,0.08); }
+
+  .score-box{ text-align:center; margin-top:10px; color:var(--pink); }
+  .final{ font-size:20px; margin-top:12px; color:#ffdede; }
+
+  footer{
+    width:100%; max-width:1200px; color:#bda9a6; margin:20px 18px 40px; font-size:13px; display:flex; justify-content:space-between; align-items:center;
+  }
+
+  @media (max-width:760px){
+    .options{ grid-template-columns:1fr; }
+    header{ padding:12px; gap:10px; }
+    .hero{ display:none; } /* keep header compact on mobile */
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="left">
+    <!-- logo: upload gensyn-logo.png in same folder -->
+    <img src="gensyn-logo.png" alt="Gensyn logo" class="logo" />
+  </div>
+
+  <div class="center">
+    <!-- optional hero/banner: upload gensyn-hero.png -->
+    <img src="gensyn-hero.png" alt="Gensyn hero" class="hero" />
+  </div>
+
+  <div class="right links">
+    <a href="https://discord.gg/gensyn" target="_blank" rel="noopener">Discord</a> |
+    <a href="https://x.com/gensynai" target="_blank" rel="noopener">X (Twitter)</a> |
+    <a href="https://www.gensyn.ai/" target="_blank" rel="noopener">Website</a> |
+    <a href="https://x.com/fact_met" target="_blank" rel="noopener">@fact_met</a>
+  </div>
+</header>
+
+<main>
+  <div class="card" role="main" aria-live="polite">
+    <h1>Gensyn AI — Knowledge Quiz</h1>
+    <p class="lead">Quick quiz based on Gensyn docs & litepaper. 12 questions — immediate feedback.</p>
+
+    <div class="progress" id="progressText">Question 1 of 12</div>
+
+    <div class="question" id="question">Loading...</div>
+
+    <div class="options" id="options" aria-label="Answer options"></div>
+
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+
+    <div class="controls">
+      <button id="nextBtn" class="btn" style="display:none">Next Question</button>
+      <button id="restartBtn" class="btn secondary" style="display:none">Restart Quiz</button>
+    </div>
+
+    <div class="score-box" id="scoreBox" style="display:none">
+      <div class="final" id="finalText"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>© 2025 Gensyn Quiz</div>
+  <div>Built by <a href="https://x.com/fact_met" target="_blank" rel="noopener" style="color:var(--accent)">@fact_met</a></div>
+</footer>
+
+<script>
+/* 12 Gensyn-based quiz questions (sourced from docs & litepaper) */
+const quiz = [
+  { q: "1) What is Gensyn?", options:["A centralized cloud provider","A decentralized compute protocol for ML","A social network for AI","A GPU vendor"], correct:1 },
+  { q: "2) Gensyn is built on which base?", options:["A custom L1 chain","An Ethereum rollup","Solana","Polkadot"], correct:1 },
+  { q: "3) Which core problem does Gensyn focus on solving?", options:["Data labelling","Work verification for ML tasks","User privacy only","NFT minting"], correct:1 },
+  { q: "4) Which component allocates and verifies reinforcement learning tasks?", options:["Judge","VerifierX","Oracle","Coordinator"], correct:0 },
+  { q: "5) What is 'RL Swarm' in Gensyn?", options:["A token model","A decentralized RL framework","A wallet","A marketplace"], correct:1 },
+  { q: "6) What does 'BlockAssist' demonstrate?", options:["Cloud hosting","Training ML inside Minecraft","A governance tool","A marketplace"], correct:1 },
+  { q: "7) Which verification technique is used in the litepaper to certify work?", options:["Probabilistic proof-of-learning","Zero-knowledge rollups","Proof of stake","Proof of replication"], correct:0 },
+  { q: "8) When was the litepaper originally published (legacy version)?", options:["Feb 2022","Jan 2024","Dec 2020","Mar 2023"], correct:0 },
+  { q: "9) Gensyn aims to unify compute from which sources?", options:["Only data centers","Personal devices to data centers","Only cloud providers","Only GPUs"], correct:1 },
+  { q: "10) Why are existing solutions insufficient according to the litepaper?", options:["Too decentralized","Too expensive or unworkable for large ML","Too fast","Lack of UI"], correct:1 },
+  { q: "11) What does the Gensyn Testnet allow anyone to do?", options:["Buy tokens","Run a node and join the protocol","Mint NFTs","Access private models"], correct:1 },
+  { q: "12) Which four features does Gensyn combine (as listed 'At a Glance')?", options:["Low fees, NFTs, DAO, Wallet","Execution, verification, peer-to-peer comms, decentralised coordination","Storage, streaming, mapping, tracking","Trading, staking, lending, borrowing"], correct:1 }
+];
+
+let idx = 0, score = 0;
+const questionEl = document.getElementById('question');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const progressText = document.getElementById('progressText');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restartBtn');
+const scoreBox = document.getElementById('scoreBox');
+const finalText = document.getElementById('finalText');
+
+function renderQuestion(){
+  const it = quiz[idx];
+  progressText.textContent = `Question ${idx+1} of ${quiz.length}`;
+  questionEl.textContent = it.q;
+  optionsEl.innerHTML = '';
+  feedbackEl.textContent = '';
+  nextBtn.style.display = 'none';
+  restartBtn.style.display = 'none';
+  for(let i=0;i<it.options.length;i++){
+    const d = document.createElement('div');
+    d.className='option';
+    d.tabIndex=0;
+    d.textContent = it.options[i];
+    d.dataset.i = i;
+    d.addEventListener('click', ()=>selectOption(i,d));
+    d.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') selectOption(i,d); });
+    optionsEl.appendChild(d);
+  }
+  // ensure scroll top of card on small screens
+  questionEl.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function selectOption(i, el){
+  // prevent double answer
+  if(nextBtn.style.display === 'inline-block') return;
+  const correctIndex = quiz[idx].correct;
+  const opts = optionsEl.querySelectorAll('.option');
+  opts.forEach(o => o.style.pointerEvents='none');
+  if(i === correctIndex){
+    opts[i].classList.add('correct');
+    feedbackEl.textContent = '✅ Correct!';
+    score++;
+  } else {
+    opts[i].classList.add('wrong');
+    opts[correctIndex].classList.add('correct');
+    feedbackEl.textContent = `❌ Incorrect — correct: ${quiz[idx].options[correctIndex]}`;
+  }
+  nextBtn.style.display = 'inline-block';
+}
+
+nextBtn.addEventListener('click', ()=>{
+  idx++;
+  if(idx < quiz.length) renderQuestion();
+  else showResults();
+});
+
+restartBtn.addEventListener('click', ()=>{
+  idx=0; score=0;
+  scoreBox.style.display='none';
+  renderQuestion();
+});
+
+function showResults(){
+  questionEl.textContent = '';
+  optionsEl.innerHTML = '';
+  feedbackEl.textContent = '';
+  progressText.textContent = '';
+  finalText.innerHTML = `<div style="font-size:20px">🎉 Quiz Completed!</div>
+    <div style="margin-top:8px">Your score: <strong>${score}/${quiz.length}</strong></div>`;
+  scoreBox.style.display = 'block';
+  restartBtn.style.display = 'inline-block';
+  restartBtn.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// Ensure stable load
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderQuestion();
+});
+</script>
+</body>
+</html>
